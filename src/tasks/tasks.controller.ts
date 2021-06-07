@@ -8,10 +8,11 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { Task, TaskStatus } from './task.model';
+import { Task } from './task.model';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-tasks.dto';
+import { UpdateTaskStatusDto } from './dto/update-task-status.dto';
 
 /**
  * Controller per la gestione delle operazioni CRUD relative ai tasks
@@ -74,15 +75,16 @@ export class TasksController {
 
   /**
    * Aggiorna lo status di un task
-   * @param id id del task
+   * @param updateTaskStatusDto Dto per l'aggiornamento dello status di un task
    * @param status
    * @returns task aggiornato
    */
   @Patch('/:id/status')
   public updateTaskStatusById(
     @Param('id') id: string,
-    @Body('status') status: TaskStatus,
+    @Body('') updateTaskStatusDto: UpdateTaskStatusDto,
   ): Task {
+    const { status } = updateTaskStatusDto;
     return this.tasksService.updateTaskStatusById(id, status);
   }
 }
