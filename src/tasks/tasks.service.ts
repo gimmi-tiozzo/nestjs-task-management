@@ -1,8 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Task, TaskStatus } from './task.model';
-import { v4 as uuid } from 'uuid';
+import { TaskStatus } from './task-status.enum';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-tasks.dto';
+import { TaskRepository } from './task.repository';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Task } from './task.entity';
+import { DeleteResult } from 'typeorm';
 
 /**
  * Servizio per la gestione delle operazioni CRUD relative ai tasks
@@ -10,74 +13,19 @@ import { GetTasksFilterDto } from './dto/get-tasks.dto';
 @Injectable()
 export class TasksService {
   /**
-   * Tasks gestiti a sistema
+   * Costruttore
+   * @param taskRepository Repository per l'accesso alle operazioni CRUD per l'entità Task
    */
-  private tasks: Task[] = [];
+  constructor(
+    @InjectRepository(TaskRepository) private taskRepository: TaskRepository,
+  ) {}
 
-  /**
-   * Ritorna la lista dei task
-   * @returns La lista dei task
-   */
-  public getAllTasks(): Task[] {
-    return this.tasks;
-  }
-
-  /**
-   * Ottieni la lista dei task per filtro di ricerca
-   * @param filterDto Dto per la ricerca dei task
-   * @returns lista dei task per filtro di ricerca
-   */
-  public getTaskWithFilters(filterDto: GetTasksFilterDto): Task[] {
-    const { status, search } = filterDto;
-
-    let tasks = this.getAllTasks();
-
-    if (status) {
-      tasks = tasks.filter((t) => t.status === status);
-    }
-
-    if (search) {
-      tasks = tasks.filter((t) => {
-        if (
-          t.title.toLocaleLowerCase().trim().includes(search) ||
-          t.description.toLocaleLowerCase().trim().includes(search)
-        ) {
-          return true;
-        }
-
-        return false;
-      });
-    }
-
-    return tasks;
-  }
-
-  /**
-   * Crea un nuovo task e aggiungilo alla lista dei task correnti
-   * @param createTaskDto DTO per la creazione di un task
-   * @returns Il nuovo task appena creato
-   */
-  public createTask(createTaskDto: CreateTaskDto): Task {
-    const { title, description } = createTaskDto;
-
-    const task: Task = {
-      title: title,
-      description: description,
-      status: TaskStatus.OPEN,
-      id: uuid(),
-    };
-
-    this.tasks.push(task);
-    return task;
-  }
-
-  /**
-   * Ricerca un task per id
-   * @param id id che identifica il task
-   * @returns task
-   */
-  public getTaskById(id: string): Task {
-    const found = this.tasks.find((t) => t.id === id);
+  //  * Ricerca un task per id
+  //  * @param id id che identifica il task
+  //  * @returns Promise per il task
+  //  */
+  public async getTaskById(id: string): Promise<Task> {
+    const found = await this.taskRepository.findOne(id);
 
     if (!found) {
       throw new NotFoundException(`Task with id "${id}" not found`);
@@ -86,30 +34,51 @@ export class TasksService {
     return found;
   }
 
-  /**
-   * Cancella un task per id
-   * @param id id del task
-   * @returns task cancellato
-   */
-  public deleteTaskById(id: string): Task {
-    const index = this.tasks.findIndex((t) => t.id === id);
+  //  * Crea un nuovo task e aggiungilo alla lista dei task correnti
+  //  * @param createTaskDto DTO per la creazione di un task
+  //  * @returns Promise per Il nuovo task appena creato
+  //  */
+  public async createTask(createTaskDto: CreateTaskDto): Promise<Task> {
+    return this.taskRepository.createTask(createTaskDto);
+  }
 
-    if (index < 0) {
+  // /**
+  //  * Cancella un task per id
+  //  * @param id id del task
+  //  * @returns Promise per l'operazione di delete asincrona
+  //  */
+  public async deleteTaskById(id: string): Promise<void> {
+    const result: DeleteResult = await this.taskRepository.delete(id);
+
+    if (!result.affected) {
       throw new NotFoundException(`Task with id "${id}" not found`);
     }
+  }
 
-    return this.tasks.splice(index, 1)[0];
+  // /**
+  //  * Aggiorna lo status di un task
+  //  * @param updateTaskStatusDto Dto per l'aggiornamento dello status di un task
+  //  * @param status
+  //  * @returns Promise al task aggiornato
+  //  */
+  public async updateTaskStatusById(
+    id: string,
+    status: TaskStatus,
+  ): Promise<Task> {
+    const task = await this.getTaskById(id);
+
+    task.status = status;
+    await this.taskRepository.save(task);
+
+    return task;
   }
 
   /**
-   * Aggiorna lo status di un task
-   * @param updateTaskStatusDto Dto per l'aggiornamento dello status di un task
-   * @param status
-   * @returns task aggiornato
+   * Ritorna la lista dei task in base al filtro di ricerca
+   * @param filterDto filtro di ricerca
+   * @returns Promise alla Lista dei task
    */
-  public updateTaskStatusById(id: string, status: TaskStatus): Task {
-    const task = this.getTaskById(id);
-    task.status = status;
-    return task;
+  public async getTask(filterDto: GetTasksFilterDto): Promise<Task[]> {
+    return this.taskRepository.getTask(filterDto);
   }
 }

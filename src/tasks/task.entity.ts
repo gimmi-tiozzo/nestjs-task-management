@@ -1,39 +1,30 @@
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { TaskStatus } from './task-status.enum';
+
 /**
  * Task
  */
-export interface Task {
+@Entity()
+export class Task {
   /**
    * Id del task
    */
+  @PrimaryGeneratedColumn('uuid')
   id: string;
+
   /**
    * Titolo del task
    */
+  @Column()
   title: string;
   /**
    * Descrizione del task
    */
+  @Column()
   description: string;
   /**
    * Stato del task
    */
+  @Column()
   status: TaskStatus;
-}
-
-/**
- * Stati di un task
- */
-export enum TaskStatus {
-  /**
-   * creato
-   */
-  OPEN = 'OPEN',
-  /**
-   * In corso
-   */
-  IN_PROGRESS = 'IN_PROGRESS',
-  /**
-   * Chiuso
-   */
-  DONE = 'DONE',
 }
