@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { TransformInterceptor } from './transform.interceptor';
 
-const PORT = process.env.PORT ?? 3000;
+const PORT = process.env.PORT;
 
 /**
  * Crea una applicazione NestJs self-host a partire dal modulo root e avviala sulla porta PORT
@@ -11,6 +11,7 @@ const PORT = process.env.PORT ?? 3000;
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.enableCors();
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalInterceptors(new TransformInterceptor());
 
