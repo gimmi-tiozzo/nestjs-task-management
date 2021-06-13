@@ -6,8 +6,8 @@ import { TaskRepository } from './task.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './task.entity';
 import { DeleteResult } from 'typeorm';
-import { User } from 'src/auth/user.entity';
-import { MyLogger } from 'src/logger/my.logger';
+import { User } from '../auth/user.entity';
+import { MyLogger } from '../logger/my.logger';
 
 /**
  * Servizio per la gestione delle operazioni CRUD relative ai tasks
@@ -99,11 +99,11 @@ export class TasksService {
    * @param user Utente autenticato
    * @returns Promise alla Lista dei task
    */
-  public async getTask(
+  public async getTasks(
     filterDto: GetTasksFilterDto,
     user: User,
   ): Promise<Task[]> {
     this.logger.verbose(`filterDto: ${JSON.stringify(filterDto)}`);
-    return this.taskRepository.getTask(filterDto, user);
+    return this.taskRepository.getTasks(filterDto, user);
   }
 }

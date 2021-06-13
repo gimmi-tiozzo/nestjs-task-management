@@ -15,8 +15,8 @@ import { GetTasksFilterDto } from './dto/get-tasks.dto';
 import { UpdateTaskStatusDto } from './dto/update-task-status.dto';
 import { Task } from './task.entity';
 import { AuthGuard } from '@nestjs/passport';
-import { GetUSer } from 'src/auth/get-user.decorator';
-import { User } from 'src/auth/user.entity';
+import { GetUSer } from '../auth/get-user.decorator';
+import { User } from '../auth/user.entity';
 
 /**
  * Controller per la gestione delle operazioni CRUD relative ai tasks
@@ -41,7 +41,7 @@ export class TasksController {
     @Query() filterDto: GetTasksFilterDto,
     @GetUSer() user: User,
   ): Promise<Task[]> {
-    return this.tasksService.getTask(filterDto, user);
+    return this.tasksService.getTasks(filterDto, user);
   }
 
   /**

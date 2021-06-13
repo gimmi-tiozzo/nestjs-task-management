@@ -5,7 +5,7 @@ import { UserRepository } from './user.repository';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './jwt-payload.interface';
-import { MyLogger } from 'src/logger/my.logger';
+import { MyLogger } from '../logger/my.logger';
 
 /**
  * Servizio per le operazioni CRUD relative allo User
