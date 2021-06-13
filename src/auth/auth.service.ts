@@ -5,6 +5,7 @@ import { UserRepository } from './user.repository';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './jwt-payload.interface';
+import { MyLogger } from 'src/logger/my.logger';
 
 /**
  * Servizio per le operazioni CRUD relative allo User
@@ -19,7 +20,10 @@ export class AuthService {
   constructor(
     @InjectRepository(UserRepository) private userRepository: UserRepository,
     private jwtService: JwtService,
-  ) {}
+    private logger: MyLogger,
+  ) {
+    this.logger.setContext('AuthService');
+  }
 
   /**
    * Crea un nuovo utente a DB
@@ -27,6 +31,9 @@ export class AuthService {
    * @returns Promise operazione
    */
   public signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
+    this.logger.verbose(
+      `authCredentialsDto.username: ${authCredentialsDto.username}`,
+    );
     return this.userRepository.createUSer(authCredentialsDto);
   }
 
@@ -39,6 +46,7 @@ export class AuthService {
     authCredentialsDto: AuthCredentialsDto,
   ): Promise<{ accessToken: string }> {
     const { username, password } = authCredentialsDto;
+    this.logger.verbose(`authCredentialsDto.username: ${username}`);
 
     const user = await this.userRepository.findOne({ username });
 

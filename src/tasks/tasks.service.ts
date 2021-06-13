@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './task.entity';
 import { DeleteResult } from 'typeorm';
 import { User } from 'src/auth/user.entity';
+import { MyLogger } from 'src/logger/my.logger';
 
 /**
  * Servizio per la gestione delle operazioni CRUD relative ai tasks
@@ -16,10 +17,14 @@ export class TasksService {
   /**
    * Costruttore
    * @param taskRepository Repository per l'accesso alle operazioni CRUD per l'entità Task
+   * @param logger logger
    */
   constructor(
     @InjectRepository(TaskRepository) private taskRepository: TaskRepository,
-  ) {}
+    private logger: MyLogger,
+  ) {
+    this.logger.setContext('TasksService');
+  }
 
   /** Ricerca un task per id
    * @param id id che identifica il task
@@ -30,7 +35,9 @@ export class TasksService {
     const found = await this.taskRepository.findOne({ where: { id, user } });
 
     if (!found) {
-      throw new NotFoundException(`Task with id "${id}" not found`);
+      const message = `Task with id "${id}" not found`;
+      this.logger.warn(message);
+      throw new NotFoundException(message);
     }
 
     return found;
@@ -45,6 +52,7 @@ export class TasksService {
     createTaskDto: CreateTaskDto,
     user: User,
   ): Promise<Task> {
+    this.logger.verbose(`CreateTaskDto: ${JSON.stringify(createTaskDto)}`);
     return this.taskRepository.createTask(createTaskDto, user);
   }
 
@@ -58,7 +66,9 @@ export class TasksService {
     const result: DeleteResult = await this.taskRepository.delete({ id, user });
 
     if (!result.affected) {
-      throw new NotFoundException(`Task with id "${id}" not found`);
+      const message = `Task with id "${id}" not found`;
+      this.logger.warn(message);
+      throw new NotFoundException(message);
     }
   }
 
@@ -74,6 +84,7 @@ export class TasksService {
     status: TaskStatus,
     user: User,
   ): Promise<Task> {
+    this.logger.verbose(`id: ${id} - status ${status}`);
     const task = await this.getTaskById(id, user);
 
     task.status = status;
@@ -92,6 +103,7 @@ export class TasksService {
     filterDto: GetTasksFilterDto,
     user: User,
   ): Promise<Task[]> {
+    this.logger.verbose(`filterDto: ${JSON.stringify(filterDto)}`);
     return this.taskRepository.getTask(filterDto, user);
   }
 }

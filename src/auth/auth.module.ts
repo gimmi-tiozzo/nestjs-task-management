@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
+import { LoggerModule } from 'src/logger/logger.module';
 
 /**
  * Modulo Providers e Controllers relativi all'autenticazione
@@ -20,6 +21,7 @@ import { JwtStrategy } from './jwt.strategy';
       },
     }),
     TypeOrmModule.forFeature([UserRepository]),
+    LoggerModule,
   ],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
